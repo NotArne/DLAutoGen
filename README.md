@@ -1,13 +1,13 @@
 ## DLAutoGen
 
-A small program to automatically create all necessary files to link a shared library at runtime.
+A small program to automatically generate all necessary files to link a shared library at runtime.
 
 ### Motivation and Functionality
-Linking a shared library at runtime can be a quite annoying and time-consuming task due to every
-function must be translated into a function-pointer. Moreover other structures must be present, too. 
+Linking a shared library at runtime can be a quite annoying and time-consuming task because every
+function must be translated to a function-pointer. Moreover, other structures must be present, too. 
 This program trys to reduce the effort of runtime linking. It needs the original headers of a library
 and creates from that new headers with function-pointers as well as all needed linking code. Please have a look
-in the examples folder for a example of generated code.
+at the examples folder for an example of the generated code.
 
 ### Compilation
 This program bases on the cppparser from satya-das, so it must be installed first.
@@ -47,7 +47,7 @@ The program can be used via command line. It has the following command line para
 The program works only on pure C functions in C libraries. The header files must be correct.
 
 ### Security
-Please check the command line parameters carefully to avoid Code Injections!!!
+Please check the command line parameters carefully to avoid Code Injections!
 
 
 
