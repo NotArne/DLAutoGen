@@ -179,7 +179,7 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
         std::cout << "INFO: The converted header file " << convertedHeaderFile << " has been created!" << std::endl;
     }
 
-    DLHeaderCodeGen dllHeaderCodeGen(parsedCommandLineParameters.commandLineLibrary);
+    DLHeaderCodeGen dllHeaderCodeGen;
     DLSourceCodeGen dllSourceCodeGen(parsedCommandLineParameters.commandLineHeaders,
                                      parsedCommandLineParameters.commandLineLibrary, allFunctionsInAllHeaders,
                                      headerReplacedFunctions);
