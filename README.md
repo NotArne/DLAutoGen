@@ -2,14 +2,14 @@
 
 A small program to automatically generate all necessary files to link a shared library at runtime.
 
-### Motivation and Functionality
+### Motivation and Functionality:
 Linking a shared library at runtime can be a quite annoying and time-consuming task because every
 function must be translated to a function-pointer. Moreover, other structures must be present, too. 
 This program trys to reduce the effort of runtime linking. It needs the original headers of a library
 and creates from that new headers with function-pointers as well as all needed linking code. Please have a look
 at the examples folder for an example of the generated code.
 
-### Compilation
+### Compilation:
 This program bases on the cppparser from satya-das, so it must be installed first.
 \
 Install the packages: \
@@ -34,7 +34,7 @@ cmake ..
 make
 ```
 
-### Usage
+### Usage:
 The program can be used via command line. It has the following command line parameters:
 
 `-h`: Print help information \
@@ -43,10 +43,10 @@ The program can be used via command line. It has the following command line para
 `-o`: Set the output directory of this program. If empty, the actual directory of the program is assumed. \
 `--cst`: If set, the functions in the header will be matched with the symbols in the symbol table of the library
 
-### Restrictions
+### Restrictions:
 The program works only on pure C functions in C libraries. The header files must be correct.
 
-### Security
+### Security:
 Please check the command line parameters carefully to avoid Code Injections!
 
 
