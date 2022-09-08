@@ -1,11 +1,5 @@
 #include <iostream>
 
-#include "OutputFileHelper.h"
-#include "ParsedFunction.h"
-#include "CParser.h"
-#include "CodeGen.h"
-#include "FunctionRegexSearch.h"
-#include "SymbolTableCheck.h"
 #include "RunFromCommandLine.h"
 
 int main(int argc, char **argv) {

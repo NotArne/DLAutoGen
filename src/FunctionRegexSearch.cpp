@@ -8,7 +8,7 @@
 #include "FunctionRegexSearch.h"
 #include "CodeGen.h"
 
-std::pair<int,int> FunctionRegexSearch::searchParsedFunction(ParsedFunction func) {
+std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction func) {
     // Build function regex
     /*std::string funcRegexString;
     funcRegexString.append("(?:");
@@ -44,26 +44,26 @@ std::pair<int,int> FunctionRegexSearch::searchParsedFunction(ParsedFunction func
     //funcRegexString.append("[[:space:]]*"); // Spaces
     funcRegexString.append("(?:" + func.returnType + ")");
     funcRegexString.append("[[:space:]]*");
-    if(func.returnValueModifier.isPointer) {
+    if (func.returnValueModifier.isPointer) {
         funcRegexString.append("\\*");
     }
     funcRegexString.append("[[:space:]]*"); // Spaces
-    funcRegexString.append("(?:" + func.name +")");
+    funcRegexString.append("(?:" + func.name + ")");
     funcRegexString.append("[[:space:]]*"); // Spaces
     funcRegexString.append("\\(");
-    if(func.hasParameters) {
-        for(size_t i = 0; i < func.parameters.size(); i++) {
+    if (func.hasParameters) {
+        for (size_t i = 0; i < func.parameters.size(); i++) {
             funcRegexString.append("[[:space:]]*"); // Spaces
             FunctionParameter param = func.parameters[i];
-            funcRegexString.append("(?:"+param.type+")");
-            if(param.modifier.isPointer){
+            funcRegexString.append("(?:" + param.type + ")");
+            if (param.modifier.isPointer) {
                 funcRegexString.append("[[:space:]]*");
                 funcRegexString.append("\\*");
             }
             funcRegexString.append("[[:space:]]*"); // Void parameter needs no space
-            funcRegexString.append("(?:"+param.name+")");
+            funcRegexString.append("(?:" + param.name + ")");
             funcRegexString.append("[[:space:]]*");
-            if( (i+1) < func.parameters.size()) {
+            if ((i + 1) < func.parameters.size()) {
                 funcRegexString.append(",");
             }
         }
@@ -79,7 +79,7 @@ std::pair<int,int> FunctionRegexSearch::searchParsedFunction(ParsedFunction func
     regex_search(this->internalHeaderFile, m, funcRegex);
 
     std::pair<int, int> result(-1, -1);
-    if(m.size() == 1) {
+    if (m.size() == 1) {
         result.first = m.position();
         result.second = m.length();
     } else {
@@ -89,10 +89,10 @@ std::pair<int,int> FunctionRegexSearch::searchParsedFunction(ParsedFunction func
     return result;
 }
 
-bool FunctionRegexSearch::replaceMatchedFunctionWithPointer(std::pair<int,int> positionsInString,
+bool FunctionRegexSearch::replaceMatchedFunctionWithPointer(std::pair<int, int> positionsInString,
                                                             ParsedFunction func) {
     FunctionPointerCodeGen pointerCodeGen(func);
-    if(positionsInString.first != -1 && positionsInString.second != -1) {
+    if (positionsInString.first != -1 && positionsInString.second != -1) {
         internalHeaderFile.replace(positionsInString.first, positionsInString.second,
                                    pointerCodeGen.getGeneratedCode());
         return true;
@@ -101,7 +101,7 @@ bool FunctionRegexSearch::replaceMatchedFunctionWithPointer(std::pair<int,int> p
 }
 
 bool FunctionRegexSearch::searchAndReplaceFunctionWithPointer(ParsedFunction func) {
-    if(!headerFileLoaded) {
+    if (!headerFileLoaded) {
         throw std::runtime_error("Error: You must load a header before it can be converted!");
     }
     auto functionPosInHeader = searchParsedFunction(func);
@@ -109,12 +109,12 @@ bool FunctionRegexSearch::searchAndReplaceFunctionWithPointer(ParsedFunction fun
 }
 
 bool FunctionRegexSearch::removeFunctionFromHeader(ParsedFunction func) {
-    if(!headerFileLoaded) {
+    if (!headerFileLoaded) {
         throw std::runtime_error("Error: You must load a header before it can be converted!");
     }
     auto functionPosInHeader = searchParsedFunction(func);
-    if(functionPosInHeader.first != -1 && functionPosInHeader.second != -1) {
-        internalHeaderFile.replace(functionPosInHeader.first, functionPosInHeader.second,"");
+    if (functionPosInHeader.first != -1 && functionPosInHeader.second != -1) {
+        internalHeaderFile.replace(functionPosInHeader.first, functionPosInHeader.second, "");
         return true;
     }
     return false;
@@ -122,12 +122,12 @@ bool FunctionRegexSearch::removeFunctionFromHeader(ParsedFunction func) {
 
 void FunctionRegexSearch::getHeaderFromFile(std::string headerFilePath) {
     std::ifstream headerFile(headerFilePath);
-    if(!headerFile.is_open()) {
+    if (!headerFile.is_open()) {
         throw std::runtime_error("Failed to open header file! Please check your file path!");
     }
 
     std::string line;
-    while(std::getline(headerFile, line)) {
+    while (std::getline(headerFile, line)) {
         this->originalHeaderFile.append(line);
         this->originalHeaderFile.append("\n");
     }

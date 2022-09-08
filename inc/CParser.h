@@ -15,9 +15,21 @@ class CParser {
 private:
     CppParser cppParser;
 
+    /**
+     * Parse a function
+     * @param ast The compound object, in this case the root of the ast
+     * @param astFunction Function in the cppparser library
+     * @return
+     */
     std::shared_ptr<ParsedObject> parsedFunction(std::unique_ptr<CppCompound> &ast, CppFunctionEPtr &astFunction);
+
 public:
-    std::vector<std::shared_ptr<ParsedObject>> parseHeader(std::string file);
+    /**
+     * Parses all functions in the specified header
+     * @param header Header, in which the functions will be parsed
+     * @return vector of ParsedObject. In this case ParsedFunctions
+     */
+    std::vector<std::shared_ptr<ParsedObject>> parseFunctionsInHeader(std::string header);
 };
 
 #endif //DLAUTOGEN_CPARSER_H

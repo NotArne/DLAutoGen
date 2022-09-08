@@ -18,7 +18,7 @@ add_executable(DLAutoGen
         src/RunFromCommandLine.cpp)
 
 target_include_directories(DLAutoGen PRIVATE ${Boost_INCLUDE_DIRS})
-target_include_directories(DLAutoGen PRIVATE ParseItems inc)
+target_include_directories(DLAutoGen PRIVATE parse_items inc)
 # Include CPPParser
 target_include_directories(DLAutoGen PUBLIC /Users/arne/Documents/Programmierung/cppparser/pub /Users/arne/Documents/Programmierung/common/third_party)
 

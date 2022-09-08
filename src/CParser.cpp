@@ -5,16 +5,16 @@
 #include "CParser.h"
 #include "ParsedFunction.h"
 
-std::vector<std::shared_ptr<ParsedObject>> CParser::parseHeader(std::string file) {
+std::vector<std::shared_ptr<ParsedObject>> CParser::parseFunctionsInHeader(std::string header) {
     std::vector<std::shared_ptr<ParsedObject>> parseObjects;
-    std::unique_ptr<CppCompound> ast = cppParser.parseFile(file);
+    std::unique_ptr<CppCompound> ast = cppParser.parseFile(header);
 
-    if(ast == nullptr) {
-        throw std::runtime_error("Failed to build the AST! Please check the input file!");
+    if (ast == nullptr) {
+        throw std::runtime_error("Failed to build the AST! Please check the input header!");
     }
 
-    for(const auto& member: ast->members()) {
-        if(member->objType_ == CppObjType::kFunction) { // Is a function declaration
+    for (const auto &member: ast->members()) {
+        if (member->objType_ == CppObjType::kFunction) { // Is a function declaration
             // Fill in values from AST
             CppFunctionEPtr astFunction = member;
             parseObjects.push_back(parsedFunction(ast, astFunction));
@@ -32,7 +32,7 @@ std::shared_ptr<ParsedObject> CParser::parsedFunction(std::unique_ptr<CppCompoun
     std::vector<FunctionParameter> allFunctionParameters;
     if (astFunction->hasParams()) {
         for (const auto &param: *astFunction->params()) {
-            if(param->objType_ == CppObjType::kVar) {
+            if (param->objType_ == CppObjType::kVar) {
                 CppVarEPtr var = param;
                 FunctionParameterModifier parameterModifier(var->varType()->typeModifier().constBits_,
                                                             var->varType()->typeModifier().ptrLevel_);
@@ -44,10 +44,10 @@ std::shared_ptr<ParsedObject> CParser::parsedFunction(std::unique_ptr<CppCompoun
 
     // Create parse result
     std::shared_ptr<ParsedObject> ptr(new ParsedFunction(astFunction->name_,
-                                                     astFunction->retType_->baseType(),
-                                                     parsedReturnValueModifier,
+                                                         astFunction->retType_->baseType(),
+                                                         parsedReturnValueModifier,
                                                          astFunction->defn() != nullptr,
-                                                     astFunction->hasParams(),
-                                                     allFunctionParameters));
+                                                         astFunction->hasParams(),
+                                                         allFunctionParameters));
     return ptr;
 }
