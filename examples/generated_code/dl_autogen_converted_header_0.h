@@ -9,14 +9,14 @@ struct TestStruct {
     int a;
     int b;
     int c;
-} TestStruct;
+};
 
-void (*hello)(void );
+extern void (*hello)(void );
 
-int (*add)(int a, int b);
+extern int (*add)(int a, int b);
 
-int (*printAndReturn42)();
+extern int (*printAndReturn42)();
 
-void (*printTestStruct)(struct TestStruct a);
+extern void (*printTestStruct)(struct TestStruct a);
 
 #endif //DLAUTOGEN_EXAMPLEHEADER1_H

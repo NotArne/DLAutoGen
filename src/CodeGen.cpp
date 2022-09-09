@@ -14,6 +14,9 @@ FunctionPointerCodeGen::FunctionPointerCodeGen(ParsedFunction func, bool generat
     if (generateExternKeyword) {
         generatedCode.append("extern ");
     }
+    if(func.returnValueModifier.isConst) {
+        generatedCode.append("const ");
+    }
     generatedCode.append(func.returnType);
     // Check for Pointer
     if (func.returnValueModifier.isPointer) {

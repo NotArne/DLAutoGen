@@ -10,10 +10,10 @@ union TestUnion {
     int e;
 };
 
-unsigned int (*return69)();
+extern unsigned int (*return69)();
 
-union TestUnion* (*createTestUnion)();
+extern union TestUnion* (*createTestUnion)();
 
-union TestUnion* (*createTestUnionFromUnion)(union TestUnion* testUnion);
+extern union TestUnion* (*createTestUnionFromUnion)(union TestUnion* testUnion);
 
 #endif //DLAUTOGEN_EXAMPLEHEADER2_H

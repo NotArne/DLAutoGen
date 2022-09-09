@@ -12,6 +12,10 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
     // Build function regex
     std::string funcRegexString;
     funcRegexString.append("(?:");
+    if(func.returnValueModifier.isConst) {
+        funcRegexString.append("(?:const)");
+        funcRegexString.append("[[:space:]]+");
+    }
     funcRegexString.append("(?:" + func.returnType + ")");
     funcRegexString.append("[[:space:]]*");
     if (func.returnValueModifier.isPointer) {
@@ -27,7 +31,7 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
             FunctionParameter param = func.parameters[i];
             if(param.modifier.isConst) {
                 funcRegexString.append("(?:const)");
-                funcRegexString.append("[[:space:]]*");
+                funcRegexString.append("[[:space:]]+");
             }
             funcRegexString.append("(?:" + param.type + ")");
             if (param.modifier.isPointer) {
@@ -55,7 +59,7 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
         result.first = m.position();
         result.second = m.length();
     } else {
-        std::cout << "WARNING: The function " << func.name << " could not be back-matched by the regex!" << std::endl;
+        std::cout << "WARNING: The function " << func.name << " could not be back-matched by the regex expression!" << std::endl;
     }
 
     return result;
