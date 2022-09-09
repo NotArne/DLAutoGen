@@ -9,7 +9,7 @@ struct TestStruct {
     int a;
     int b;
     int c;
-} TestStruct;
+};
 
 void hello(void);
 
