@@ -1,5 +1,5 @@
 //
-// Created by Arne Haus on 04.09.22.
+// Created by NotArne on 04.09.22.
 //
 
 #ifndef DLAUTOGEN_CODEGEN_H
@@ -66,10 +66,10 @@ private:
 
     /**
      * Generates all header includes needed for the generated source file
-     * @param dllLibraryHeader List of all headers specified with the command line parameters
+     * @param dllLibraryHeader Amount of all headers specified with the command line parameters
      * @return string with all needed C header includes
      */
-    std::string generateHeaderInclude(std::vector<std::string> dllLibraryHeader);
+    std::string generateHeaderInclude(const int amountOfHeaders);
 
     /**
      * Generates the dlopen command needed for the generated source file
@@ -78,7 +78,12 @@ private:
      */
     std::string generateDLOpenCommand(std::string dll);
 
-
+    /**
+     * Generates the pointer definition without extern keyword
+     * @param funcToLink All functions, which are in the header file
+     * @param replacedFunctions All functions, which has been replaced in the header
+     * @return string of the generated function pointers
+     */
     std::string generateDLPointerDefinition(std::vector<std::shared_ptr<ParsedObject>> funcToLink,
                                             std::unordered_set<std::string> replacedFunctions);
 

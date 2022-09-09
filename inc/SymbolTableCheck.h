@@ -1,5 +1,5 @@
 //
-// Created by Arne Haus on 07.09.22.
+// Created by NotArne on 07.09.22.
 //
 
 #ifndef DLAUTOGEN_SYMBOLTABLECHECK_H

@@ -1,5 +1,5 @@
 //
-// Created by Arne Haus on 03.09.22.
+// Created by NotArne on 03.09.22.
 //
 #include <iostream>
 #include "CParser.h"

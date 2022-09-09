@@ -1,5 +1,5 @@
 //
-// Created by Arne Haus on 06.09.22.
+// Created by NotArne on 06.09.22.
 //
 
 #ifndef DLAUTOGEN_OUTPUTFILEHELPER_H

@@ -1,5 +1,5 @@
 //
-// Created by Arne Haus on 08.09.22.
+// Created by NotArne on 08.09.22.
 //
 
 #ifndef DLAUTOGEN_EXAMPLEHEADER1_H

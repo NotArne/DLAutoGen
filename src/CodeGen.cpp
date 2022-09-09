@@ -1,5 +1,5 @@
 //
-// Created by Arne Haus on 04.09.22.
+// Created by NotArne on 04.09.22.
 //
 #include <boost/format.hpp>
 
@@ -60,7 +60,7 @@ DLHeaderCodeGen::DLHeaderCodeGen() {
     generatedCode.append((boost::format("void autogen_dlclose();\n")).str());
 }
 
-std::string DLSourceCodeGen::generateHeaderInclude(std::vector<std::string> dllLibraryHeader) {
+std::string DLSourceCodeGen::generateHeaderInclude(const int amountOfHeaders) {
     std::string includeComponent;
     includeComponent.append("#include <dlfcn.h> \n");
     includeComponent.append("#include <stdio.h> \n");
@@ -68,7 +68,7 @@ std::string DLSourceCodeGen::generateHeaderInclude(std::vector<std::string> dllL
     includeComponent.append("#include \"" + CodeGenConstants::generatedHeaderFileName + "\"\n");
 
     int index = 0;
-    for (const std::string &fileToInclude: dllLibraryHeader) {
+    for (size_t i = 0; i < amountOfHeaders; i++) {
         includeComponent.append(
                 (boost::format("#include \"" + CodeGenConstants::replacedHeaderFilePrefix + "\"\n") % index).str());
         index++;
@@ -144,7 +144,7 @@ DLSourceCodeGen::generateDLSource(std::vector<std::string> dllLibraryHeader,
                                   std::unordered_set<std::string> replacedFunctions,
                                   bool printAbortsOnDlSymFailure) {
     std::string dlSourceComponent;
-    dlSourceComponent.append(generateHeaderInclude(dllLibraryHeader));
+    dlSourceComponent.append(generateHeaderInclude(dllLibraryHeader.size()));
     dlSourceComponent.append("\n");
     dlSourceComponent.append((boost::format("void* %1%;\n") % CodeGenConstants::libraryHandlerPrefix).str());
     dlSourceComponent.append("\n");
