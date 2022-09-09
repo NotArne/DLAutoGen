@@ -21,7 +21,14 @@ private:
      * @param astFunction Function in the cppparser library
      * @return
      */
-    std::shared_ptr<ParsedObject> parsedFunction(std::unique_ptr<CppCompound> &ast, CppFunctionEPtr &astFunction);
+    std::shared_ptr<ParsedObject> parseFunction(CppCompoundEPtr &ast, CppFunctionEPtr &astFunction);
+
+    /**
+     * Parse a function in a compound
+     * @param compound Compound object to search in for headers
+     * @param parsedObjects List of parsed objects
+     */
+    void parseFunctionsInCompound(CppCompoundEPtr &compound, std::vector<std::shared_ptr<ParsedObject>>& parsedObjects);
 
 public:
     /**

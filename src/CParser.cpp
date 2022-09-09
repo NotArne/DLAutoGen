@@ -7,24 +7,33 @@
 
 std::vector<std::shared_ptr<ParsedObject>> CParser::parseFunctionsInHeader(std::string header) {
     std::vector<std::shared_ptr<ParsedObject>> parseObjects;
-    std::unique_ptr<CppCompound> ast = cppParser.parseFile(header);
 
-    if (ast == nullptr) {
-        throw std::runtime_error("Failed to build the AST! Please check the input header!");
-    }
-
-    for (const auto &member: ast->members()) {
-        if (member->objType_ == CppObjType::kFunction) { // Is a function declaration
-            // Fill in values from AST
-            CppFunctionEPtr astFunction = member;
-            parseObjects.push_back(parsedFunction(ast, astFunction));
-        }
-    }
+    std::unique_ptr<CppCompound> rootCompoundUnique = cppParser.parseFile(header);
+    CppCompoundEPtr easyCompoundPtr = rootCompoundUnique;
+    parseFunctionsInCompound(easyCompoundPtr, parseObjects);
 
     return parseObjects;
 }
 
-std::shared_ptr<ParsedObject> CParser::parsedFunction(std::unique_ptr<CppCompound> &ast, CppFunctionEPtr &astFunction) {
+void CParser::parseFunctionsInCompound(CppCompoundEPtr &compound,
+                                       std::vector<std::shared_ptr<ParsedObject>>& parsedObjects) {
+    if (compound.get() == nullptr) {
+        throw std::runtime_error("Failed to build a compound in AST! Please check the input header!");
+    }
+    for (const auto &member: compound->members()) {
+        if (member->objType_ == CppObjType::kCompound) {
+            CppCompoundEPtr newCompound = member;
+            parseFunctionsInCompound(newCompound, parsedObjects);
+        }
+        if (member->objType_ == CppObjType::kFunction) { // Is a function declaration
+            // Fill in values from AST
+            CppFunctionEPtr astFunction = member;
+            parsedObjects.push_back(std::move(parseFunction(compound, astFunction)));
+        }
+    }
+}
+
+std::shared_ptr<ParsedObject> CParser::parseFunction(CppCompoundEPtr &ast, CppFunctionEPtr &astFunction) {
     const auto astFunctionReturnModifier = astFunction->retType_->typeModifier();
     FunctionReturnValueModifier parsedReturnValueModifier(astFunctionReturnModifier.constBits_,
                                                           astFunctionReturnModifier.ptrLevel_);
