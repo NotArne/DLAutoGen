@@ -11,7 +11,7 @@ std::string CodeGen::getGeneratedCode() const {
 
 // Generate FunctionPointer
 FunctionPointerCodeGen::FunctionPointerCodeGen(ParsedFunction func, bool generateExternKeyword) {
-    if(generateExternKeyword) {
+    if (generateExternKeyword) {
         generatedCode.append("extern ");
     }
     generatedCode.append(func.returnType);
@@ -25,7 +25,7 @@ FunctionPointerCodeGen::FunctionPointerCodeGen(ParsedFunction func, bool generat
     if (func.hasParameters) {
         for (size_t i = 0; i < func.parameters.size(); i++) {
             FunctionParameter param = func.parameters[i];
-            if(param.modifier.isConst) {
+            if (param.modifier.isConst) {
                 generatedCode.append("const ");
             }
             generatedCode.append(param.type);
@@ -107,7 +107,8 @@ std::string DLSourceCodeGen::generateDLOpenCommand(std::string dll) {
 
 std::string DLSourceCodeGen::generateDLSymCommand(std::vector<std::shared_ptr<ParsedObject>> funcToLink,
                                                   std::string dll,
-                                                  std::unordered_set<std::string> replacedFunctions) {
+                                                  std::unordered_set<std::string> replacedFunctions,
+                                                  bool printAbortsOnDlSymFailure) {
     std::string dlSymComponent;
     dlSymComponent.append("char* dlSymErrorMessage; \n");
     for (const auto &parsedObject: funcToLink) {
@@ -121,7 +122,10 @@ std::string DLSourceCodeGen::generateDLSymCommand(std::vector<std::shared_ptr<Pa
                      CodeGenConstants::libraryHandlerPrefix % func->name).str());
             dlSymComponent.append((boost::format(
                     "if((dlSymErrorMessage = dlerror())) {\n  perror(\"Error: dlsym on function %1% failed!\");"
-                    "\n  perror(dlSymErrorMessage); \n  abort(); \n}\n") % func->name).str());
+                    "\n  perror(dlSymErrorMessage);") % func->name).str());
+            if (printAbortsOnDlSymFailure) {
+                dlSymComponent.append("\n  abort(); \n}\n");
+            }
         }
     }
     return dlSymComponent;
@@ -137,7 +141,8 @@ std::string
 DLSourceCodeGen::generateDLSource(std::vector<std::string> dllLibraryHeader,
                                   std::string dll,
                                   std::vector<std::shared_ptr<ParsedObject>> funcToLink,
-                                  std::unordered_set<std::string> replacedFunctions) {
+                                  std::unordered_set<std::string> replacedFunctions,
+                                  bool printAbortsOnDlSymFailure) {
     std::string dlSourceComponent;
     dlSourceComponent.append(generateHeaderInclude(dllLibraryHeader));
     dlSourceComponent.append("\n");
@@ -149,7 +154,8 @@ DLSourceCodeGen::generateDLSource(std::vector<std::string> dllLibraryHeader,
                                             "%1%\n"
                                             "%2%"
                                             "\n}") % generateDLOpenCommand(dll) %
-                              generateDLSymCommand(funcToLink, dll, replacedFunctions)).str());
+                              generateDLSymCommand(funcToLink, dll, replacedFunctions,
+                                                   printAbortsOnDlSymFailure)).str());
     dlSourceComponent.append("\n");
     dlSourceComponent.append((boost::format("void autogen_dlclose(){\n "
                                             "%1%"
@@ -160,6 +166,8 @@ DLSourceCodeGen::generateDLSource(std::vector<std::string> dllLibraryHeader,
 DLSourceCodeGen::DLSourceCodeGen(std::vector<std::string> dllLibraryHeader,
                                  std::string dll,
                                  std::vector<std::shared_ptr<ParsedObject>> funcToLink,
-                                 std::unordered_set<std::string> replacedFunctions) {
-    generatedCode.append(generateDLSource(dllLibraryHeader, dll, funcToLink, replacedFunctions));
+                                 std::unordered_set<std::string> replacedFunctions,
+                                 bool printAbortsOnDlSymFailure) {
+    generatedCode.append(
+            generateDLSource(dllLibraryHeader, dll, funcToLink, replacedFunctions, printAbortsOnDlSymFailure));
 }

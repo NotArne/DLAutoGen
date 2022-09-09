@@ -88,10 +88,11 @@ private:
      * @param funcToLink All parsed functions of all headers
      * @param dll Library, which should be linked at runtime
      * @param replacedFunctions Function which has been matched. If --cst is not set, than it contains all function names
+     * @param printAbortsOnDlSymFailure Specifies wether to print the abort command if the regarding dlsym fails
      * @return string with the dlsym command(s)
      */
     std::string generateDLSymCommand(std::vector<std::shared_ptr<ParsedObject>> funcToLink, std::string dll,
-                                     std::unordered_set<std::string> replacedFunctions);
+                                     std::unordered_set<std::string> replacedFunctions, bool printAbortsOnDlSymFailure);
 
     /**
      * Generates the dlclose command for the library, which should be linked at runtime
@@ -106,11 +107,13 @@ private:
      * @param dll Library, which should be linked at runtime
      * @param funcToLink All parsed functions of all headers
      * @param replacedFunctions Function which has been matched. If --cst is not set, than it contains all function names
+     * @param printAbortsOnDlSymFailure Specifies wether to print the abort command if the regarding dlsym fails
      * @return
      */
     std::string generateDLSource(std::vector<std::string> dllLibraryHeader, std::string dll,
                                  std::vector<std::shared_ptr<ParsedObject>> funcToLink,
-                                 std::unordered_set<std::string> replacedFunctions);
+                                 std::unordered_set<std::string> replacedFunctions,
+                                 bool printAbortsOnDlSymFailure);
 
 public:
     /**
@@ -119,10 +122,12 @@ public:
      * @param dll Library, which should be linked at runtime
      * @param funcToLink All parsed functions of all headers
      * @param replacedFunctions Function which has been matched. If --cst is not set, than it contains all function names
+     * @param printAbortsOnDlSymFailure Specifies wether to print the abort command if the regarding dlsym fails
      */
     DLSourceCodeGen(std::vector<std::string> dllLibraryHeader, std::string dll,
                     std::vector<std::shared_ptr<ParsedObject>> funcToLink,
-                    std::unordered_set<std::string> replacedFunctions);
+                    std::unordered_set<std::string> replacedFunctions,
+                    bool printAbortsOnDlSymFailure);
 };
 
 

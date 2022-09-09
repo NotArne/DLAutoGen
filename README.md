@@ -43,7 +43,9 @@ The program can be used via command line. It has the following command line para
 `-i`: Path to the header files regarding the library. It can be specified more than one header. \
 `-l`: Library which should be linked at runtime \
 `-o`: Set the output directory of this program. If empty, the actual directory of the program is assumed. \
-`--cst`: If set, the functions in the header will be matched with the symbols in the symbol table of the library
+`--cst`: If set, the functions in the header will be matched with the symbols in the symbol table of the library \
+`--cl`: Check if the specified library exists on the system. \
+`--adsf`: Add the abort command to generated files, iff dlsym fails.
 
 ### Restrictions:
 The program works only on pure C functions in C libraries. The `extern "C"` construct in C++ might work. The header files must be correct.

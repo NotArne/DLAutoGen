@@ -43,7 +43,11 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             ("cst", boost::program_options::bool_switch(),
              "If set, the functions found in the header files will be matched to the symbol table of the library")
             ("output,o", boost::program_options::value<std::string>()->default_value(""),
-             "Output directory. Specifies where to write the generated files.");
+             "Output directory. Specifies where to write the generated files.")
+            ("cl", boost::program_options::bool_switch(),
+             "Check if the specified library exists on the system.")
+            ("adsf", boost::program_options::bool_switch(),
+             "Add the abort command to generated files, if dlsym fails.");
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, optionsDescription), vm);
     notify(vm);
@@ -52,6 +56,8 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
     std::string parsedLibrary;
     std::string parsedOutputDirectory;
     bool parsedCheckSymbolTable;
+    bool parsedCheckInputs;
+    bool parsedAbortOnFailure;
 
     if (vm.count("help")) {
         std::cout << optionsDescription << std::endl;
@@ -60,6 +66,9 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
         std::cout << "DLAutoGen version: " << "1.0.0" << std::endl;
         exit(0);
     } else {
+        parsedCheckSymbolTable = vm.at("cst").as<bool>();
+        parsedCheckInputs = vm.at("cl").as<bool>();
+        parsedAbortOnFailure = vm.at("adsf").as<bool>();
         // Parse command line include headers
         if (vm.count("header")) {
             std::vector<std::string> commandLineHeaders = vm.at("header").as<std::vector<std::string>>();
@@ -83,11 +92,15 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
         // Parse commandline library
         if (vm.count("library")) {
             std::string commandLineLibrary = vm.at("library").as<std::string>();
-            if (isLibraryExistent(commandLineLibrary)) {
-                parsedLibrary = commandLineLibrary;
+            if (parsedCheckInputs) {
+                if (isLibraryExistent(commandLineLibrary)) {
+                    parsedLibrary = commandLineLibrary;
+                } else {
+                    std::cerr << "Error: The library " << commandLineLibrary << " has not been found!" << std::endl;
+                    exit(0);
+                }
             } else {
-                std::cerr << "Error: The library " << commandLineLibrary << " has not been found!" << std::endl;
-                exit(0);
+                parsedLibrary = commandLineLibrary;
             }
         } else {
             std::cerr << "Error: No library is specified!" << std::endl;
@@ -101,18 +114,18 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             exit(0);
         }
 
-        parsedCheckSymbolTable = vm.at("cst").as<bool>();
     }
 
-    ParsedCommandLineParameters result(parsedHeaders, parsedLibrary, parsedOutputDirectory, parsedCheckSymbolTable);
+    ParsedCommandLineParameters result(parsedHeaders, parsedLibrary, parsedOutputDirectory, parsedCheckSymbolTable,
+                                       parsedCheckInputs, parsedAbortOnFailure);
     return result;
 }
 
 void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
     ParsedCommandLineParameters parsedCommandLineParameters = parseCommandLineParameters(argc, argv);
 
-    std::vector<std::shared_ptr<ParsedObject>> allFunctionsInAllHeaders;
-    std::unordered_set<std::string> headerReplacedFunctions;
+    std::vector<std::shared_ptr<ParsedObject>> allFunctionsInAllHeaders; // All functions in the header
+    std::unordered_set<std::string> headerReplacedFunctions; // Functions has been replaced while running the program
 
     std::string outputDirectory = parsedCommandLineParameters.outputDirectory;
     // Try to build valid output path
@@ -126,7 +139,7 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
         std::string headerFilePath = parsedCommandLineParameters.commandLineHeaders[i];
         CParser cParser;
         const auto result = cParser.parseFunctionsInHeader(headerFilePath);
-
+        std::cout << "Functions in header(s): " << result.size() << std::endl;
         FunctionRegexSearch functionRegexMatch;
         functionRegexMatch.getHeaderFromFile(headerFilePath);
 
@@ -182,7 +195,7 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
     DLHeaderCodeGen dllHeaderCodeGen;
     DLSourceCodeGen dllSourceCodeGen(parsedCommandLineParameters.commandLineHeaders,
                                      parsedCommandLineParameters.commandLineLibrary, allFunctionsInAllHeaders,
-                                     headerReplacedFunctions);
+                                     headerReplacedFunctions, parsedCommandLineParameters.abortOnDlSymFailure);
     // Write generated header to file
     OutputFileHelper::writeToFile(outputDirectory + CodeGenConstants::generatedHeaderFileName,
                                   dllHeaderCodeGen.getGeneratedCode());
@@ -193,6 +206,5 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
                                   dllSourceCodeGen.getGeneratedCode());
     std::cout << "INFO: The generated source file " << outputDirectory + CodeGenConstants::generatedSourceFileName
               << " has been created!" << std::endl;
-
 }
 
