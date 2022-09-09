@@ -10,7 +10,10 @@ std::string CodeGen::getGeneratedCode() const {
 }
 
 // Generate FunctionPointer
-FunctionPointerCodeGen::FunctionPointerCodeGen(ParsedFunction func) {
+FunctionPointerCodeGen::FunctionPointerCodeGen(ParsedFunction func, bool generateExternKeyword) {
+    if(generateExternKeyword) {
+        generatedCode.append("extern ");
+    }
     generatedCode.append(func.returnType);
     // Check for Pointer
     if (func.returnValueModifier.isPointer) {
@@ -40,16 +43,16 @@ FunctionPointerCastCodeGen::FunctionPointerCastCodeGen(ParsedFunction func) {
     ParsedFunction emptyName("", func.returnType,
                              func.returnValueModifier,
                              func.hasDefinition,
+                             func.isExtern,
                              func.hasParameters,
                              func.parameters);
-    FunctionPointerCodeGen emptyPointerCodeGen(emptyName);
+    FunctionPointerCodeGen emptyPointerCodeGen(emptyName, false);
     generatedCode = emptyPointerCodeGen.getGeneratedCode();
 }
 
 DLHeaderCodeGen::DLHeaderCodeGen() {
     generatedCode.append("#pragma once\n");
     generatedCode.append("\n");
-    generatedCode.append((boost::format("void* %1%;\n") % CodeGenConstants::libraryHandlerPrefix).str());
     generatedCode.append((boost::format("void autogen_dlopen();\n")).str());
     generatedCode.append((boost::format("void autogen_dlclose();\n")).str());
 }
@@ -68,6 +71,22 @@ std::string DLSourceCodeGen::generateHeaderInclude(std::vector<std::string> dllL
         index++;
     }
     return includeComponent;
+}
+
+std::string DLSourceCodeGen::generateDLPointerDefinition(std::vector<std::shared_ptr<ParsedObject>> funcToLink,
+                                                         std::unordered_set<std::string> replacedFunctions) {
+    std::string generatedDefinitions;
+    for (const auto &parsedObject: funcToLink) {
+        ParsedFunction *func = (ParsedFunction *) parsedObject.get();
+        if (replacedFunctions.find(func->name) !=
+            replacedFunctions.end()) {
+            FunctionPointerCodeGen functionPointer(*func, false);
+            generatedDefinitions.append(functionPointer.getGeneratedCode());
+            generatedDefinitions.append(";");
+            generatedDefinitions.append("\n");
+        }
+    }
+    return generatedDefinitions;
 }
 
 std::string DLSourceCodeGen::generateDLOpenCommand(std::string dll) {
@@ -99,7 +118,7 @@ std::string DLSourceCodeGen::generateDLSymCommand(std::vector<std::shared_ptr<Pa
                      CodeGenConstants::libraryHandlerPrefix % func->name).str());
             dlSymComponent.append((boost::format(
                     "if((dlSymErrorMessage = dlerror())) {\n  perror(\"Error: dlsym on function %1% failed!\");"
-                    "\n  perror(dlSymErrorMessage); \n}\n") % func->name).str());
+                    "\n  perror(dlSymErrorMessage); \n  abort(); \n}\n") % func->name).str());
         }
     }
     return dlSymComponent;
@@ -118,6 +137,10 @@ DLSourceCodeGen::generateDLSource(std::vector<std::string> dllLibraryHeader,
                                   std::unordered_set<std::string> replacedFunctions) {
     std::string dlSourceComponent;
     dlSourceComponent.append(generateHeaderInclude(dllLibraryHeader));
+    dlSourceComponent.append("\n");
+    dlSourceComponent.append((boost::format("void* %1%;\n") % CodeGenConstants::libraryHandlerPrefix).str());
+    dlSourceComponent.append("\n");
+    dlSourceComponent.append(generateDLPointerDefinition(funcToLink, replacedFunctions));
     dlSourceComponent.append("\n");
     dlSourceComponent.append((boost::format("void autogen_dlopen(){\n"
                                             "%1%\n"

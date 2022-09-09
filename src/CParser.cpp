@@ -28,7 +28,6 @@ std::shared_ptr<ParsedObject> CParser::parsedFunction(std::unique_ptr<CppCompoun
     const auto astFunctionReturnModifier = astFunction->retType_->typeModifier();
     FunctionReturnValueModifier parsedReturnValueModifier(astFunctionReturnModifier.constBits_,
                                                           astFunctionReturnModifier.ptrLevel_);
-
     std::vector<FunctionParameter> allFunctionParameters;
     if (astFunction->hasParams()) {
         for (const auto &param: *astFunction->params()) {
@@ -47,6 +46,7 @@ std::shared_ptr<ParsedObject> CParser::parsedFunction(std::unique_ptr<CppCompoun
                                                          astFunction->retType_->baseType(),
                                                          parsedReturnValueModifier,
                                                          astFunction->defn() != nullptr,
+                                                         astFunction->hasAttr(CppIdentifierAttrib::kExtern),
                                                          astFunction->hasParams(),
                                                          allFunctionParameters));
     return ptr;

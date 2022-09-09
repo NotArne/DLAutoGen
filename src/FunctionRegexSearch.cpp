@@ -91,7 +91,7 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
 
 bool FunctionRegexSearch::replaceMatchedFunctionWithPointer(std::pair<int, int> positionsInString,
                                                             ParsedFunction func) {
-    FunctionPointerCodeGen pointerCodeGen(func);
+    FunctionPointerCodeGen pointerCodeGen(func, !func.isExtern);
     if (positionsInString.first != -1 && positionsInString.second != -1) {
         internalHeaderFile.replace(positionsInString.first, positionsInString.second,
                                    pointerCodeGen.getGeneratedCode());

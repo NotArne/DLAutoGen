@@ -36,9 +36,10 @@ class FunctionPointerCodeGen : public CodeGen {
 public:
     /**
      * Creates from a function the responding function-pointer representation
-     * @param func Function, from which the pointer will be created
+     * @param func Function, from which the pointer will be
+     * @param generateExternKeyword Specifies, if the extern keyword should be generated
      */
-    FunctionPointerCodeGen(ParsedFunction func);
+    FunctionPointerCodeGen(ParsedFunction func, bool generateExternKeyword);
 };
 
 class FunctionPointerCastCodeGen : public CodeGen {
@@ -75,8 +76,11 @@ private:
      * @param dll Library, which should be linked at runtime
      * @return string with the dlopen command
      */
-
     std::string generateDLOpenCommand(std::string dll);
+
+
+    std::string generateDLPointerDefinition(std::vector<std::shared_ptr<ParsedObject>> funcToLink,
+                                            std::unordered_set<std::string> replacedFunctions);
 
     /**
      * Generates the dlsym command(s) for all parsed libraries. If --cst is set, than for all libraries,

@@ -2,7 +2,7 @@
 // Created by Arne Haus on 08.09.22.
 //
 
-#include <printf.h>
+#include <stdio.h>
 #include "ExampleHeader1.h"
 
 void hello(void) {

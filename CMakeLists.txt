@@ -24,9 +24,9 @@ target_include_directories(DLAutoGen PUBLIC /Users/arne/Documents/Programmierung
 
 # Link CPPParser
 target_link_libraries(DLAutoGen /Users/arne/Documents/Programmierung/cppparser/build/libcppparser.a)
-target_link_libraries(DLAutoGen /Users/arne/Documents/Programmierung/cppparser/build/boost/libboost_system.a)
+#target_link_libraries(DLAutoGen /Users/arne/Documents/Programmierung/cppparser/build/boost/libboost_system.a)
 target_link_libraries(DLAutoGen /Users/arne/Documents/Programmierung/cppparser/build/boost/libboost_filesystem.a)
-target_link_libraries(DLAutoGen /Users/arne/Documents/Programmierung/cppparser/build/boost/libboost_program_options.a)
+#target_link_libraries(DLAutoGen /Users/arne/Documents/Programmierung/cppparser/build/boost/libboost_program_options.a)
 
 # Link Boost
 target_link_libraries(DLAutoGen ${Boost_LIBRARIES})

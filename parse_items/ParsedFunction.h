@@ -34,6 +34,7 @@ struct ParsedFunction : public ParsedObject {
 public:
 
     ParsedFunction(std::string name, std::string returnType, FunctionReturnValueModifier returnValueModifier, bool hasDefinition,
+                   bool isExtern,
                    bool hasParameters = false,
                    std::vector<FunctionParameter> parameters = std::vector<FunctionParameter>()) :
                    name(name),
@@ -41,7 +42,8 @@ public:
                    returnValueModifier(returnValueModifier),
                    hasParameters(hasParameters),
                    parameters(parameters),
-                   hasDefinition(hasDefinition) {};
+                   hasDefinition(hasDefinition),
+                   isExtern(isExtern){};
 
     // Name of the function
     const std::string name;
@@ -56,6 +58,9 @@ public:
 
     // Definition
     const bool hasDefinition;
+
+    // IsExtern
+    const bool isExtern;
 
     AllParsableItems getParsableObjectType() override {
         return AllParsableItems::PARSED_FUNCTION;
