@@ -10,38 +10,8 @@
 
 std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction func) {
     // Build function regex
-    /*std::string funcRegexString;
-    funcRegexString.append("(?:");
-    funcRegexString.append("(?:[[:space:]])*"); // Spaces
-    funcRegexString.append("(?:" + func.returnType + ")");
-    if(func.returnValueModifier.isPointer) {
-        funcRegexString.append("\\*");
-    }
-    funcRegexString.append("(?:[[:space:]])+"); // Spaces
-    funcRegexString.append("(?:" + func.name +")");
-    funcRegexString.append("(?:[[:space:]])*"); // Spaces
-    funcRegexString.append("\\(");
-    if(func.hasParameters) {
-        for(size_t i = 0; i < func.parameters.size(); i++) {
-            funcRegexString.append("(?:[[:space:]])*"); // Spaces
-            FunctionParameter param = func.parameters[i];
-            funcRegexString.append("(?:"+param.type+")");
-            if(param.modifier.isPointer){
-                funcRegexString.append("\\*");
-            }
-            funcRegexString.append("(?:[[:space:]])*"); // Void parameter needs no space
-            funcRegexString.append("(?:"+param.name+")");
-            funcRegexString.append("(?:[[:space:]])*");
-            if( (i+1) < func.parameters.size()) {
-                funcRegexString.append(",");
-            }
-        }
-    }
-    funcRegexString.append("\\)");
-    funcRegexString.append(")+"); */
     std::string funcRegexString;
     funcRegexString.append("(?:");
-    //funcRegexString.append("[[:space:]]*"); // Spaces
     funcRegexString.append("(?:" + func.returnType + ")");
     funcRegexString.append("[[:space:]]*");
     if (func.returnValueModifier.isPointer) {
@@ -55,6 +25,10 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
         for (size_t i = 0; i < func.parameters.size(); i++) {
             funcRegexString.append("[[:space:]]*"); // Spaces
             FunctionParameter param = func.parameters[i];
+            if(param.modifier.isConst) {
+                funcRegexString.append("(?:const)");
+                funcRegexString.append("[[:space:]]*");
+            }
             funcRegexString.append("(?:" + param.type + ")");
             if (param.modifier.isPointer) {
                 funcRegexString.append("[[:space:]]*");
@@ -69,8 +43,6 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
         }
     }
     funcRegexString.append("\\)");
-    //funcRegexString.append("[[:space:]]*");
-    //funcRegexString.append(";");
     funcRegexString.append(")+");
 
     std::regex funcRegex(funcRegexString);

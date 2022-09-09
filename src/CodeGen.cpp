@@ -25,6 +25,9 @@ FunctionPointerCodeGen::FunctionPointerCodeGen(ParsedFunction func, bool generat
     if (func.hasParameters) {
         for (size_t i = 0; i < func.parameters.size(); i++) {
             FunctionParameter param = func.parameters[i];
+            if(param.modifier.isConst) {
+                generatedCode.append("const ");
+            }
             generatedCode.append(param.type);
             if (param.modifier.isPointer) {
                 generatedCode.append("*");
