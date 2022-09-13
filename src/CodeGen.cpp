@@ -71,7 +71,7 @@ std::string DLSourceCodeGen::generateHeaderInclude(const int amountOfHeaders) {
     includeComponent.append("#include \"" + CodeGenConstants::generatedHeaderFileName + "\"\n");
 
     int index = 0;
-    for (size_t i = 0; i < amountOfHeaders; i++) {
+    for (int i = 0; i < amountOfHeaders; i++) {
         includeComponent.append(
                 (boost::format("#include \"" + CodeGenConstants::replacedHeaderFilePrefix + "\"\n") % index).str());
         index++;
