@@ -9,16 +9,17 @@
 
 struct ParsedCommandLineParameters {
     ParsedCommandLineParameters(std::vector<std::string> commandLineHeaders, std::string commandLineLibrary,
-                                std::string outputDirectory, bool checkSymbolTable, bool checkCommandLineInput,
+                                std::string outputDirectory, std::string functionListPath, bool checkSymbolTable, bool checkCommandLineInput,
                                 bool abortOnDlSymFailure) :
             commandLineHeaders(commandLineHeaders), commandLineLibrary(commandLineLibrary),
-            outputDirectory(outputDirectory), checkSymbolTable(checkSymbolTable),
+            outputDirectory(outputDirectory), functionListPath(functionListPath), checkSymbolTable(checkSymbolTable),
             checkCommandLineInput(checkCommandLineInput),
             abortOnDlSymFailure(abortOnDlSymFailure) {}
 
     const std::vector<std::string> commandLineHeaders;
     const std::string commandLineLibrary;
     const std::string outputDirectory;
+    const std::string functionListPath;
     const bool checkSymbolTable;
     const bool checkCommandLineInput;
     const bool abortOnDlSymFailure;

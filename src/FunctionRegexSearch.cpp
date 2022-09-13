@@ -7,12 +7,13 @@
 #include <regex>
 #include "FunctionRegexSearch.h"
 #include "CodeGen.h"
+#include "FileHelper.h"
 
 std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction func) {
     // Build function regex
     std::string funcRegexString;
     funcRegexString.append("(?:");
-    if(func.returnValueModifier.isConst) {
+    if (func.returnValueModifier.isConst) {
         funcRegexString.append("(?:const)");
         funcRegexString.append("[[:space:]]+");
     }
@@ -29,7 +30,7 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
         for (size_t i = 0; i < func.parameters.size(); i++) {
             funcRegexString.append("[[:space:]]*"); // Spaces
             FunctionParameter param = func.parameters[i];
-            if(param.modifier.isConst) {
+            if (param.modifier.isConst) {
                 funcRegexString.append("(?:const)");
                 funcRegexString.append("[[:space:]]+");
             }
@@ -59,7 +60,8 @@ std::pair<int, int> FunctionRegexSearch::searchParsedFunction(ParsedFunction fun
         result.first = m.position();
         result.second = m.length();
     } else {
-        std::cout << "WARNING: The function " << func.name << " could not be back-matched by the regex expression!" << std::endl;
+        std::cout << "WARNING: The function " << func.name << " could not be back-matched by the regex expression!"
+                  << std::endl;
     }
 
     return result;
@@ -97,19 +99,9 @@ bool FunctionRegexSearch::removeFunctionFromHeader(ParsedFunction func) {
 }
 
 void FunctionRegexSearch::getHeaderFromFile(std::string headerFilePath) {
-    std::ifstream headerFile(headerFilePath);
-    if (!headerFile.is_open()) {
-        throw std::runtime_error("Failed to open header file! Please check your file path!");
-    }
-
-    std::string line;
-    while (std::getline(headerFile, line)) {
-        this->originalHeaderFile.append(line);
-        this->originalHeaderFile.append("\n");
-    }
+    originalHeaderFile = FileHelper::readFromFile(headerFilePath);
     headerFileLoaded = true;
     internalHeaderFile = originalHeaderFile;
-    headerFile.close();
 }
 
 void FunctionRegexSearch::setOriginalHeaderFile(std::string header) {

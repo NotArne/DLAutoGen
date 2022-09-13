@@ -2,12 +2,12 @@
 // Created by NotArne on 06.09.22.
 //
 
-#ifndef DLAUTOGEN_OUTPUTFILEHELPER_H
-#define DLAUTOGEN_OUTPUTFILEHELPER_H
+#ifndef DLAUTOGEN_FILEHELPER_H
+#define DLAUTOGEN_FILEHELPER_H
 
 #include <string>
 
-class OutputFileHelper {
+class FileHelper {
 public:
 
     /**
@@ -16,6 +16,8 @@ public:
      * @param content Content to write in file
      */
     static void writeToFile(std::string filePath, std::string content);
+
+    static std::string readFromFile(std::string filePath);
 };
 
-#endif //DLAUTOGEN_OUTPUTFILEHELPER_H
+#endif //DLAUTOGEN_FILEHELPER_H

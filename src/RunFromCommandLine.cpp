@@ -12,7 +12,8 @@
 #include "FunctionRegexSearch.h"
 #include "CodeGen.h"
 #include "SymbolTableCheck.h"
-#include "OutputFileHelper.h"
+#include "FileHelper.h"
+#include "CsvParser.h"
 
 
 bool RunFromCommandLine::isHeaderFileExistent(std::string headerFile) {
@@ -47,7 +48,10 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             ("cl", boost::program_options::bool_switch(),
              "Check if the specified library exists on the system.")
             ("adsf", boost::program_options::bool_switch(),
-             "Add the abort command to generated files, if dlsym fails.");
+             "Add the abort command to generated files, if dlsym fails.")
+            ("flp", boost::program_options::value<std::string>()->default_value(""),
+             "Function list path: Specify via a .csv file path function names, which should be linked.");
+
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, optionsDescription), vm);
     notify(vm);
@@ -55,6 +59,7 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
     std::vector<std::string> parsedHeaders;
     std::string parsedLibrary;
     std::string parsedOutputDirectory;
+    std::string parsedFunctionListPath;
     bool parsedCheckSymbolTable;
     bool parsedCheckInputs;
     bool parsedAbortOnFailure;
@@ -111,12 +116,17 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             parsedOutputDirectory = vm.at("output").as<std::string>();
         } else {
             std::cerr << "Error: No output directory specified!" << std::endl;
-            exit(0);
+        }
+
+        if (vm.count("flp")) {
+            parsedFunctionListPath = vm.at("flp").as<std::string>();
+            std::cout << parsedFunctionListPath << std::endl;
         }
 
     }
 
-    ParsedCommandLineParameters result(parsedHeaders, parsedLibrary, parsedOutputDirectory, parsedCheckSymbolTable,
+    ParsedCommandLineParameters result(parsedHeaders, parsedLibrary, parsedOutputDirectory, parsedFunctionListPath,
+                                       parsedCheckSymbolTable,
                                        parsedCheckInputs, parsedAbortOnFailure);
     return result;
 }
@@ -143,6 +153,12 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
         FunctionRegexSearch functionRegexMatch;
         functionRegexMatch.getHeaderFromFile(headerFilePath);
 
+        bool functionListSet = (parsedCommandLineParameters.functionListPath != "");
+        std::vector<std::string> functionList;
+        if (functionListSet) {
+            functionList = CsvParser::parseCsvFromFile(parsedCommandLineParameters.functionListPath);
+        }
+
         if (parsedCommandLineParameters.checkSymbolTable) {
             std::unordered_set<std::string> headerFunctionNames;
             for (const auto &res: result) {
@@ -157,7 +173,9 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
                 auto f = (ParsedFunction *) res.get();
                 allFunctionsInAllHeaders.push_back(res);
                 if (!f->hasDefinition) {
-                    if ((matchedToSymbolTable.find(f->name) != matchedToSymbolTable.end())) {
+                    if ((matchedToSymbolTable.find(f->name) != matchedToSymbolTable.end()) &&
+                        ((std::find(functionList.begin(), functionList.end(), f->name) != functionList.end()) ||
+                         !functionListSet)) {
                         bool success = functionRegexMatch.searchAndReplaceFunctionWithPointer(*f);
                         if (success) {
                             headerReplacedFunctions.insert(f->name);
@@ -178,9 +196,18 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
                 auto f = (ParsedFunction *) res.get();
                 allFunctionsInAllHeaders.push_back(res);
                 if (!f->hasDefinition) {
-                    bool success = functionRegexMatch.searchAndReplaceFunctionWithPointer(*f);
-                    if (success) {
-                        headerReplacedFunctions.insert(f->name);
+                    if ((std::find(functionList.begin(), functionList.end(), f->name) != functionList.end()) ||
+                        !functionListSet) {
+                        bool success = functionRegexMatch.searchAndReplaceFunctionWithPointer(*f);
+                        if (success) {
+                            headerReplacedFunctions.insert(f->name);
+                        }
+                    } else {
+                        bool success = functionRegexMatch.removeFunctionFromHeader(*f);
+                        if (!success) {
+                            std::cout << "WARNING: Failed to remove the function " << f->name
+                                      << " from converted header file!" << std::endl;
+                        }
                     }
                 }
             }
@@ -188,7 +215,7 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
         // Write replaced header to file
         std::string convertedHeaderFile =
                 outputDirectory + (boost::format(CodeGenConstants::replacedHeaderFilePrefix) % i).str();
-        OutputFileHelper::writeToFile(convertedHeaderFile, functionRegexMatch.getReplacedHeaderFile());
+        FileHelper::writeToFile(convertedHeaderFile, functionRegexMatch.getReplacedHeaderFile());
         std::cout << "INFO: The converted header file " << convertedHeaderFile << " has been created!" << std::endl;
     }
 
@@ -197,13 +224,13 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
                                      parsedCommandLineParameters.commandLineLibrary, allFunctionsInAllHeaders,
                                      headerReplacedFunctions, parsedCommandLineParameters.abortOnDlSymFailure);
     // Write generated header to file
-    OutputFileHelper::writeToFile(outputDirectory + CodeGenConstants::generatedHeaderFileName,
-                                  dllHeaderCodeGen.getGeneratedCode());
+    FileHelper::writeToFile(outputDirectory + CodeGenConstants::generatedHeaderFileName,
+                            dllHeaderCodeGen.getGeneratedCode());
     std::cout << "INFO: The generated header file " << outputDirectory + CodeGenConstants::generatedHeaderFileName
               << " has been created!" << std::endl;
     // Write generated source to file
-    OutputFileHelper::writeToFile(outputDirectory + CodeGenConstants::generatedSourceFileName,
-                                  dllSourceCodeGen.getGeneratedCode());
+    FileHelper::writeToFile(outputDirectory + CodeGenConstants::generatedSourceFileName,
+                            dllSourceCodeGen.getGeneratedCode());
     std::cout << "INFO: The generated source file " << outputDirectory + CodeGenConstants::generatedSourceFileName
               << " has been created!" << std::endl;
 }

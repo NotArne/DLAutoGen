@@ -39,13 +39,15 @@ make
 ### Usage:
 The program can be used via command line. It has the following command line parameters:
 
-`-h`: Print help information \
-`-i`: Path to the header files regarding the library. It can be specified more than one header. \
-`-l`: Library which should be linked at runtime \
-`-o`: Set the output directory of this program. If empty, the actual directory of the program is assumed. \
-`--cst`: If set, the functions in the header will be matched with the symbols in the symbol table of the library \
-`--cl`: Check if the specified library exists on the system. \
-`--adsf`: Add the abort command to generated files, iff dlsym fails.
+`-h`: (help) Print help information \
+`-i`: (include) Path to the header files regarding the library. It can be specified more than one header. \
+`-l`: (library) Library which should be linked at runtime \
+`-o`: (output) Set the output directory of this program. If empty, the actual directory of the program is assumed. \
+`--cst`: (check symbol table) If set, the functions in the header will be matched with the symbols in the symbol table of the library \
+`--cl`: (check library) Check if the specified library exists on the system. \
+`--adsf`: (abort on dlsym failure) Add the abort command to generated files, iff dlsym fails. \
+`--fml`: (function list path) Specify the path to a comma(,) separated .csv file which contains the names of the functions which should be linked.
+        Functions which are in the header but not mentioned in the .csv list will be removed from the generated header.
 
 ### Restrictions:
 The program works only on pure C functions in C libraries. The `extern "C"` construct in C++ might work. The header files must be correct.
