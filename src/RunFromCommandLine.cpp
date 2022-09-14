@@ -41,7 +41,7 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             ("header,i", boost::program_options::value<std::vector<std::string>>()->multitoken(),
              "Input header of the library. It can be specified several header files.")
             ("library,l", boost::program_options::value<std::string>(), "Library which should be linked at runtime.")
-            ("cst", boost::program_options::bool_switch(),
+            ("cst", boost::program_options::value<std::string>()->default_value(""),
              "If set, the functions found in the header files will be matched to the symbol table of the library")
             ("output,o", boost::program_options::value<std::string>()->default_value(""),
              "Output directory. Specifies where to write the generated files.")
@@ -60,7 +60,7 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
     std::string parsedLibrary;
     std::string parsedOutputDirectory;
     std::string parsedFunctionListPath;
-    bool parsedCheckSymbolTable;
+    std::string parsedCheckSymbolTable;
     bool parsedCheckInputs;
     bool parsedAbortOnFailure;
 
@@ -71,7 +71,6 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
         std::cout << "DLAutoGen version: " << "1.0.0" << std::endl;
         exit(0);
     } else {
-        parsedCheckSymbolTable = vm.at("cst").as<bool>();
         parsedCheckInputs = vm.at("cl").as<bool>();
         parsedAbortOnFailure = vm.at("adsf").as<bool>();
         // Parse command line include headers
@@ -118,9 +117,12 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             std::cerr << "Error: No output directory specified!" << std::endl;
         }
 
+        if (vm.count("cst")) {
+            parsedCheckSymbolTable = vm.at("cst").as<std::string>();
+        }
+
         if (vm.count("flp")) {
             parsedFunctionListPath = vm.at("flp").as<std::string>();
-            std::cout << parsedFunctionListPath << std::endl;
         }
 
     }
@@ -159,7 +161,8 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
             functionList = CsvParser::parseCsvFromFile(parsedCommandLineParameters.functionListPath);
         }
 
-        if (parsedCommandLineParameters.checkSymbolTable) {
+        std::cout << parsedCommandLineParameters.checkSymbolTable << std::endl;
+        if (parsedCommandLineParameters.checkSymbolTable != "") { // If check symbol table path is set
             std::unordered_set<std::string> headerFunctionNames;
             for (const auto &res: result) {
                 auto f = (ParsedFunction *) res.get();
@@ -168,7 +171,7 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
                 }
             }
             auto matchedToSymbolTable = SymbolTableCheck::matchFunctionNameToSymbolTable(headerFunctionNames,
-                                                                                         parsedCommandLineParameters.commandLineLibrary);
+                                                                                         parsedCommandLineParameters.checkSymbolTable);
             for (const auto &res: result) {
                 auto f = (ParsedFunction *) res.get();
                 allFunctionsInAllHeaders.push_back(res);

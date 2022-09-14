@@ -14,7 +14,7 @@ FunctionPointerCodeGen::FunctionPointerCodeGen(ParsedFunction func, bool generat
     if (generateExternKeyword) {
         generatedCode.append("extern ");
     }
-    if(func.returnValueModifier.isConst) {
+    if (func.returnValueModifier.isConst) {
         generatedCode.append("const ");
     }
     generatedCode.append(func.returnType);
@@ -128,6 +128,8 @@ std::string DLSourceCodeGen::generateDLSymCommand(std::vector<std::shared_ptr<Pa
                     "\n  perror(dlSymErrorMessage);") % func->name).str());
             if (printAbortsOnDlSymFailure) {
                 dlSymComponent.append("\n  abort(); \n}\n");
+            } else {
+                dlSymComponent.append("\n}\n");
             }
         }
     }
