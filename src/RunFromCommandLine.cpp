@@ -11,7 +11,7 @@
 #include "CParser.h"
 #include "FunctionRegexSearch.h"
 #include "CodeGen.h"
-#include "SymbolTableCheck.h"
+#include "CheckHeaderFunction.h"
 #include "FileHelper.h"
 #include "CsvParser.h"
 
@@ -41,8 +41,8 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             ("header,i", boost::program_options::value<std::vector<std::string>>()->multitoken(),
              "Input header of the library. It can be specified several header files.")
             ("library,l", boost::program_options::value<std::string>(), "Library which should be linked at runtime.")
-            ("cst", boost::program_options::value<std::string>()->default_value(""),
-             "If set, the functions found in the header files will be matched to the symbol table of the library")
+            ("chf", boost::program_options::bool_switch(),
+             "If set, the functions found in the header files will testwise linked and checked on errors.")
             ("output,o", boost::program_options::value<std::string>()->default_value(""),
              "Output directory. Specifies where to write the generated files.")
             ("cl", boost::program_options::bool_switch(),
@@ -60,7 +60,7 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
     std::string parsedLibrary;
     std::string parsedOutputDirectory;
     std::string parsedFunctionListPath;
-    std::string parsedCheckSymbolTable;
+    bool parsedCheckHeaderFunction;
     bool parsedCheckInputs;
     bool parsedAbortOnFailure;
 
@@ -73,6 +73,7 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
     } else {
         parsedCheckInputs = vm.at("cl").as<bool>();
         parsedAbortOnFailure = vm.at("adsf").as<bool>();
+        parsedCheckHeaderFunction = vm.at("chf").as<bool>();
         // Parse command line include headers
         if (vm.count("header")) {
             std::vector<std::string> commandLineHeaders = vm.at("header").as<std::vector<std::string>>();
@@ -117,10 +118,6 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
             std::cerr << "Error: No output directory specified!" << std::endl;
         }
 
-        if (vm.count("cst")) {
-            parsedCheckSymbolTable = vm.at("cst").as<std::string>();
-        }
-
         if (vm.count("flp")) {
             parsedFunctionListPath = vm.at("flp").as<std::string>();
         }
@@ -128,7 +125,7 @@ ParsedCommandLineParameters RunFromCommandLine::parseCommandLineParameters(int a
     }
 
     ParsedCommandLineParameters result(parsedHeaders, parsedLibrary, parsedOutputDirectory, parsedFunctionListPath,
-                                       parsedCheckSymbolTable,
+                                       parsedCheckHeaderFunction,
                                        parsedCheckInputs, parsedAbortOnFailure);
     return result;
 }
@@ -161,31 +158,19 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
             functionList = CsvParser::parseCsvFromFile(parsedCommandLineParameters.functionListPath);
         }
 
-        std::cout << parsedCommandLineParameters.checkSymbolTable << std::endl;
-        if (parsedCommandLineParameters.checkSymbolTable != "") { // If check symbol table path is set
-            std::unordered_set<std::string> headerFunctionNames;
-            for (const auto &res: result) {
-                auto f = (ParsedFunction *) res.get();
-                if (!f->hasDefinition) {
-                    headerFunctionNames.insert(f->name);
-                }
-            }
-            auto matchedToSymbolTable = SymbolTableCheck::matchFunctionNameToSymbolTable(headerFunctionNames,
-                                                                                         parsedCommandLineParameters.checkSymbolTable);
+        if (parsedCommandLineParameters.checkHeaderFunction) {
+            CheckHeaderFunction checkHeaderFunction(parsedCommandLineParameters.commandLineLibrary.c_str());
             for (const auto &res: result) {
                 auto f = (ParsedFunction *) res.get();
                 allFunctionsInAllHeaders.push_back(res);
                 if (!f->hasDefinition) {
-                    if ((matchedToSymbolTable.find(f->name) != matchedToSymbolTable.end()) &&
-                        ((std::find(functionList.begin(), functionList.end(), f->name) != functionList.end()) ||
-                         !functionListSet)) {
+                    if (((std::find(functionList.begin(), functionList.end(), f->name) != functionList.end()) ||
+                         !functionListSet) && (checkHeaderFunction.checkFunction(f->name.c_str()))) {
                         bool success = functionRegexMatch.searchAndReplaceFunctionWithPointer(*f);
                         if (success) {
                             headerReplacedFunctions.insert(f->name);
                         }
                     } else {
-                        std::cout << "WARNING: The function " << f->name
-                                  << " could not be matched to a symbol in the library!" << std::endl;
                         bool success = functionRegexMatch.removeFunctionFromHeader(*f);
                         if (!success) {
                             std::cout << "WARNING: Failed to remove the function " << f->name
@@ -215,6 +200,7 @@ void RunFromCommandLine::runFromCommandLine(int argc, char **argv) {
                 }
             }
         }
+
         // Write replaced header to file
         std::string convertedHeaderFile =
                 outputDirectory + (boost::format(CodeGenConstants::replacedHeaderFilePrefix) % i).str();
