@@ -49,8 +49,8 @@ The program can be used via command line. It has the following command line para
 `-i`: (include) Path to the header files regarding the library. It can be specified more than one header. \
 `-l`: (library) Library which should be linked at runtime \
 `-o`: (output) Set the output directory of this program. If empty, the actual directory of the program is assumed. \
-`--chf`: (check header functions) If set, the functions in the header will be testwise linked to the library and functions
-with occurring errors will not be added to generated code \
+`--chf`: (check header functions) If set, the functions in the header will testwise linked to the library and functions
+with occurring errors will not added to generated code \
 `--cl`: (check library) Check if the specified library exists on the system. \
 `--adsf`: (abort on dlsym failure) Add the abort command to generated files, iff dlsym fails. \
 `--flp`: (function list path) Specify the path to a comma(,) separated .csv file which contains the names of the
