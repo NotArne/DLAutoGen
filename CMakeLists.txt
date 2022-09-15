@@ -14,7 +14,7 @@ add_executable(dlautogen
         src/CodeGen.cpp
         src/FunctionRegexSearch.cpp
         src/FileHelper.cpp
-        src/SymbolTableCheck.cpp
+        src/CheckHeaderFunction.cpp
         src/RunFromCommandLine.cpp
         src/CsvParser.cpp)
 
